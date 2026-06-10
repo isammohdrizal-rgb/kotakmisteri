@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Kotak Misteri! 🎁</title>
+    
+    <!-- Font bergaya kartun untuk kanak-kanak -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Pustaka Canvas Confetti untuk kesan letupan kertas warna-warni -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            /* Latar belakang kecerunan lembut yang bergerak perlahan */
+            background: linear-gradient(135deg, #ffeaa7, #ff7675, #74b9ff, #55efc4);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #ffffff;
+            font-size: 3rem;
+            text-shadow: 4px 4px 0px #2d3436, 7px 7px 0px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            animation: bounce 2s infinite;
+        }
+
+        p.subtitle {
+            font-size: 1.3rem;
+            color: #ffffff;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+            font-weight: bold;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Susunan 3 kotak */
+        .box-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* Kad Kotak Misteri */
+        .box-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 6px solid #fff;
+            border-radius: 30px;
+            padding: 25px;
+            width: 260px;
+            text-align: center;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .box-card:hover {
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.25);
+        }
+
+        /* Gaya grafik SVG Kotak yang tertutup */
+        .closed-box-svg {
+            width: 100%;
+            height: 180px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .box-card:hover .closed-box-svg {
+            transform: scale(1.05);
+        }
+
+        /* Butang interaktif */
+        .box-btn {
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #b2bec3;
+            transition: all 0.1s ease;
+            width: 100%;
+        }
+
+        .box-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #b2bec3;
+        }
+
+        /* Animasi menggetarkan kotak semasa proses pembukaan */
+        .shake {
+            animation: shakeAnimation 0.5s ease infinite;
+        }
+
+        @keyframes shakeAnimation {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-2deg); }
+            20% { transform: translate(-3px, 0px) rotate(2deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(2deg); }
+            50% { transform: translate(-1px, 2px) rotate(-2deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(2deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* Paparan Modal Hadiah (Popup) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            border: 10px solid #ffeaa7;
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Gaya paparan imej hadiah yang didedahkan */
+        .prize-image {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 20px;
+            border: 6px solid #ffeaa7;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            animation: prizeBounce 1.5s infinite;
+        }
+
+        @keyframes prizeBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05) rotate(2deg); }
+        }
+
+        .close-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #27ae60;
+            transition: all 0.1s ease;
+        }
+
+        .close-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title-container">
+        <h1>KOTAK MISTERI! 🎁</h1>
+        <p class="subtitle">Pilih satu kotak di bawah!</p>
+    </div>
+
+    <div class="box-container">
+        
+        <!-- KOTAK MISTERI 1 (Warna Merah Jambu) -->
+        <div class="box-card" onclick="bukaKotak(1, this)">
+            <svg class="closed-box-svg" viewBox="0 0 100 100">
+                <rect x="20" y="40" width="60" height="50" rx="8" fill="#ff7675" stroke="#2d3436" stroke-width="4"/>
+                <rect x="15" y="30" width="70" height="15" rx="5" fill="#d63031" stroke="#2d3436" stroke-width="4"/>
+                <rect x="45" y="30" width="10" height="60" fill="#ffeaa7"/>
+                <rect x="20" y="55" width="60" height="10" fill="#ffeaa7"/>
+                <text x="50" y="75" font-family="'Fredoka One', sans-serif" font-size="28" fill="#ffffff" font-weight="bold" text-anchor="middle" stroke="#2d3436" stroke-width="2">?</text>
+            </svg>
+            <button class="box-btn">PILIH SAYA! 🌟</button>
+        </div>
+
+        <!-- KOTAK MISTERI 2 (Warna Biru) -->
+        <div class="box-card" onclick="bukaKotak(2, this)">
+            <svg class="closed-box-svg" viewBox="0 0 100 100">
+                <rect x="20" y="40" width="60" height="50" rx="8" fill="#74b9ff" stroke="#2d3436" stroke-width="4"/>
+                <rect x="15" y="30" width="70" height="15" rx="5" fill="#0984e3" stroke="#2d3436" stroke-width="4"/>
+                <rect x="45" y="30" width="10" height="60" fill="#ffeaa7"/>
+                <rect x="20" y="55" width="60" height="10" fill="#ffeaa7"/>
+                <text x="50" y="75" font-family="'Fredoka One', sans-serif" font-size="28" fill="#ffffff" font-weight="bold" text-anchor="middle" stroke="#2d3436" stroke-width="2">?</text>
+            </svg>
+            <button class="box-btn">PILIH SAYA! ✨</button>
+        </div>
+
+        <!-- KOTAK MISTERI 3 (Warna Hijau/Turquoise) -->
+        <div class="box-card" onclick="bukaKotak(3, this)">
+            <svg class="closed-box-svg" viewBox="0 0 100 100">
+                <rect x="20" y="40" width="60" height="50" rx="8" fill="#55efc4" stroke="#2d3436" stroke-width="4"/>
+                <rect x="15" y="30" width="70" height="15" rx="5" fill="#00b894" stroke="#2d3436" stroke-width="4"/>
+                <rect x="45" y="30" width="10" height="60" fill="#ffeaa7"/>
+                <rect x="20" y="55" width="60" height="10" fill="#ffeaa7"/>
+                <text x="50" y="75" font-family="'Fredoka One', sans-serif" font-size="28" fill="#ffffff" font-weight="bold" text-anchor="middle" stroke="#2d3436" stroke-width="2">?</text>
+            </svg>
+            <button class="box-btn">PILIH SAYA! 🌈</button>
+        </div>
+
+    </div>
+
+    <!-- Popup Modal Hadiah -->
+    <div class="modal" id="modalHadiah">
+        <div class="modal-content">
+            <!-- Memaparkan imej sahaja -->
+            <img class="prize-image" id="prize-image" src="" alt="Hadiah Misteri">
+            <button class="close-btn" onclick="tutupModal()">Cuba Lagi! 🔁</button>
+        </div>
+    </div>
+
+    <script>
+        // Data pautan imej hadiah anda
+        const hadiah = {
+            1: "https://i.postimg.cc/RCgB6htp/bright-yellow-sunburst-lens-flare-53876-102363.jpg",
+            2: "https://i.postimg.cc/T1Jhg6Vx/images-(2).png",
+            3: "https://i.postimg.cc/XvtZ0xjK/download.jpg"
+        };
+
+        let sedangMemproses = false;
+        let audioCtx;
+
+        // Fungsi penting untuk melepasi sekatan pelayar web (User Gesture Unlock)
+        function inisialisasiAudio() {
+            try {
+                // Bina AudioContext hanya sekali sahaja
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                // Jika audio disekat/suspended, aktifkan semula secara paksa pada saat klik dilakukan
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
+                // Menjana bunyi ringkas berfrekuensi tidak kedengaran (1Hz) serta-merta 
+                // bagi memastikan pelayar web mengiktiraf bahawa pengguna telah membenarkan audio.
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch (e) {
+                console.log("Web Audio tidak disokong: ", e);
+            }
+        }
+
+        // Fungsi utama untuk menjana bunyi kord "Tada!" yang riang
+        function mainkanBunyiSurprise() {
+            if (!audioCtx) return;
+
+            try {
+                const masaMula = audioCtx.currentTime;
+                
+                // Frekuensi not-not kord C Major (C5, E5, G5, C6)
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                const selaMasa = 0.08; // Kelajuan jarak nada (arpeggio)
+
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    // Menggunakan gelombang 'triangle' untuk bunyi yang lembut seperti permainan retro
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, masaMula + i * selaMasa);
+                    
+                    // Kelantangan bunyi dilaraskan (0.35 agar bunyi jelas)
+                    gainNode.gain.setValueAtTime(0, masaMula + i * selaMasa);
+                    gainNode.gain.linearRampToValueAtTime(0.35, masaMula + i * selaMasa + 0.02);
+                    
+                    if (i === notes.length - 1) {
+                        // Not kemuncak terakhir berbunyi lebih panjang (pudar perlahan-lahan)
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, masaMula + i * selaMasa + 1.2);
+                        osc.stop(masaMula + i * selaMasa + 1.2);
+                    } else {
+                        // Not-not awal pudar dengan cepat
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, masaMula + i * selaMasa + 0.35);
+                        osc.stop(masaMula + i * selaMasa + 0.35);
+                    }
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.start(masaMula + i * selaMasa);
+                });
+            } catch (e) {
+                console.log("Bunyi gagal dimainkan: ", e);
+            }
+        }
+
+        function bukaKotak(nomborKotak, element) {
+            if (sedangMemproses) return; 
+            sedangMemproses = true;
+
+            // 1. LANGKAH PENTING: Aktifkan sistem audio serta-merta sebaik sahaja klik dikesan
+            inisialisasiAudio();
+
+            // Memulakan animasi bergetar pada kotak tertutup
+            element.classList.add('shake');
+            
+            // Menunggu 1.2 saat untuk memberikan kesan suspens
+            setTimeout(() => {
+                element.classList.remove('shake');
+                
+                // Memasukkan pautan imej berdasarkan kotak yang dipilih
+                const imejHadiah = hadiah[nomborKotak];
+                document.getElementById('prize-image').src = imejHadiah;
+                
+                // Menunjukkan popup modal hadiah
+                document.getElementById('modalHadiah').classList.add('active');
+                
+                // 2. Memainkan bunyi kejutan (surprise) yang telah dinyahsekat
+                mainkanBunyiSurprise();
+
+                // Melancarkan kesan confetti
+                letupkanConfetti();
+                
+                sedangMemproses = false;
+            }, 1200);
+        }
+
+        function tutupModal() {
+            document.getElementById('modalHadiah').classList.remove('active');
+            // Mengosongkan semula src imej selepas ditutup
+            document.getElementById('prize-image').src = "";
+        }
+
+        // Fungsi kesan visual letupan confetti
+        function letupkanConfetti() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.8 }
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.8 }
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+</body>
+</html>
